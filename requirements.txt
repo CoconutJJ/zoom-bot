@@ -1,0 +1,7 @@
+PyAutoGUI==0.9.52
+PyAudio==0.2.11
+opencv_python==4.2.0.34
+ffmpeg_python==0.2.0
+numpy==1.19.2
+ffmpeg==1.4
+Pillow==8.0.1
