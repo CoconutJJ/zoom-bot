@@ -106,7 +106,7 @@ def zoomBot(basepath, meetingid, meetingpasscode, duration, filename):
     sub = subprocess.Popen("zoom")
     
     time.sleep(4)
-    locateAndClick(basepath + "icons/meeting_join.png", 1)
+    locateAndClick(basepath + "icons/meeting_join.png", 5)
     pyautogui.click()
     locateAndClick(basepath + "icons/meeting_id_input.png", 1)
     pyautogui.write(meetingid)
@@ -148,7 +148,6 @@ def zoomBot(basepath, meetingid, meetingpasscode, duration, filename):
 
 if __name__ == "__main__":
     
-    win = tk.Tk()
     basepath = "/".join(sys.argv[0].split('/')[:-1])
 
     if len(basepath) != 0:
