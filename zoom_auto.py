@@ -18,43 +18,45 @@ from PIL import ImageGrab
 import os
 import wave
 
-def locateAndClick(imgUrl, delay=0):
 
-    loc = pyautogui.locateCenterOnScreen(imgUrl)
-
-    if delay > 0:
-        time.sleep(delay)
+def locateAndClick(imgUrl):
+    
+    
+    while (loc := pyautogui.locateCenterOnScreen(imgUrl, grayscale=False, confidence=.5)) is None:
+        print("Attempting to find matching GUI: " + imgUrl)
+        continue
 
     pyautogui.click(loc)
 
 
 def startRecordScreenProcess(outFileName, width, height):
-    
+
     pid = os.fork()
 
     if pid == 0:
         stop = False
 
         def sigHandler(signal, frame):
-            nonlocal stop 
+            nonlocal stop
             stop = True
 
         signal.signal(SIGINT, sigHandler)
 
         fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-        
-        vid = cv2.VideoWriter(outFileName, fourcc, 30, (width,height))
+
+        vid = cv2.VideoWriter(outFileName, fourcc, 30, (width, height))
 
         while not stop:
             img = ImageGrab.grab(bbox=(0, 0, width, height))
             frame = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
 
             vid.write(frame)
-            
+
         vid.release()
         sys.exit(0)
     else:
         return pid
+
 
 def startRecordAudioProcess(outFileName):
 
@@ -65,7 +67,7 @@ def startRecordAudioProcess(outFileName):
         stop = False
 
         def sigHandler(signal, frame):
-            nonlocal stop 
+            nonlocal stop
             stop = True
 
         signal.signal(SIGINT, sigHandler)
@@ -82,7 +84,8 @@ def startRecordAudioProcess(outFileName):
                 systemSoundIndex = i
                 break
 
-        stream = p.open(format=pyaudio.paInt16, channels=2, rate=44100, input=True, frames_per_buffer=1024, input_device_index=systemSoundIndex)
+        stream = p.open(format=pyaudio.paInt16, channels=2, rate=44100, input=True,
+                        frames_per_buffer=1024, input_device_index=systemSoundIndex)
 
         waveFile = wave.open(outFileName, 'wb')
 
@@ -94,7 +97,6 @@ def startRecordAudioProcess(outFileName):
             data = stream.read(1024)
             waveFile.writeframes(data)
 
-            
         waveFile.close()
         sys.exit(0)
     else:
@@ -102,29 +104,28 @@ def startRecordAudioProcess(outFileName):
 
 
 def zoomBot(basepath, meetingid, meetingpasscode, duration, filename):
-    
+
     sub = subprocess.Popen("zoom")
-    
-    time.sleep(4)
-    locateAndClick(basepath + "icons/meeting_join.png", 5)
-    pyautogui.click()
-    locateAndClick(basepath + "icons/meeting_id_input.png", 1)
+
+    locateAndClick(basepath + "icons/meeting_join.png")
+    locateAndClick(basepath + "icons/meeting_id_input.png")
     pyautogui.write(meetingid)
     locateAndClick(basepath + "icons/meeting_id_join.png")
-    locateAndClick(basepath + "icons/meeting_password_input.png", 1)
+    locateAndClick(basepath + "icons/meeting_password_input.png")
     pyautogui.write(meetingpasscode)
     locateAndClick(basepath + "icons/meeting_password_join.png")
-    
+
     win = tk.Tk()
 
-    screenPid = startRecordScreenProcess("out.mp4", win.winfo_screenwidth(), win.winfo_screenheight())
+    screenPid = startRecordScreenProcess(
+        "out.mp4", win.winfo_screenwidth(), win.winfo_screenheight())
     audioPid = startRecordAudioProcess("out.wav")
-    
+
     time.sleep(int(duration * 60))
 
     os.kill(screenPid, SIGINT)
     os.kill(audioPid, SIGINT)
-    try:    
+    try:
         os.waitpid(screenPid, os.WEXITED)
         os.waitpid(audioPid, os.WEXITED)
     except:
@@ -134,10 +135,11 @@ def zoomBot(basepath, meetingid, meetingpasscode, duration, filename):
     audio = ffmpeg.input('out.wav')
     try:
         os.remove(filename)
-    except: 
+    except:
         pass
 
-    out = ffmpeg.output(video, audio, filename, vcodec='copy', acodec='aac', strict='experimental')
+    out = ffmpeg.output(video, audio, filename, vcodec='copy',
+                        acodec='aac', strict='experimental')
     out.run()
 
     os.remove("out.mp4")
@@ -147,18 +149,18 @@ def zoomBot(basepath, meetingid, meetingpasscode, duration, filename):
 
 
 if __name__ == "__main__":
-    
+
     basepath = "/".join(sys.argv[0].split('/')[:-1])
 
     if len(basepath) != 0:
         basepath += "/"
 
     print(basepath)
-    
+
     if len(sys.argv) != 5:
         print("usage: " + sys.argv[0] +
               " [Zoom Meeting Id] [Zoom Meeting Password] [Duration in Minutes] [Out File]")
         exit(1)
 
-    zoomBot(basepath, sys.argv[1], sys.argv[2], float(sys.argv[3]), sys.argv[4])
-
+    zoomBot(basepath, sys.argv[1], sys.argv[2],
+            float(sys.argv[3]), sys.argv[4])
