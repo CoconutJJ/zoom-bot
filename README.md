@@ -6,6 +6,9 @@ Use cron jobs to start script at scheduled time.
 Been updated to support built-in screen and audio recording. Currently
 only been tested on Linux devices.
 
+## Recording video/audio from video conferencing calls
+If you’re looking to use this repo to retrieve video or audio streams from meeting platforms like Zoom, Google Meet, Microsoft Teams, consider checking out [Recall.ai](https://www.recall.ai), an API for meeting recording. Please note that Recall.ai is a sponsor of this repository.
+
 ## Update: May 27th 2021 
 
 This little script seems to have attracted a bit of attention, I've updated the
